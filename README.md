@@ -19,8 +19,6 @@ Permasalahan yang diangkat:
 - Penerima tidak punya informasi kapan dan di mana makanan tersedia.
 - Makanan yang terbuang di TPA menghasilkan emisi gas metana yang memperburuk perubahan iklim.
 
-> TODO: tambahkan data pendukung (statistik limbah makanan di Indonesia atau kondisi lokal Purwokerto) beserta sumbernya.
-
 ## 3. Tujuan dan Manfaat
 
 **Tujuan**
