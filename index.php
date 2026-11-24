@@ -123,6 +123,7 @@ $page_title = 'Berbagi Makanan Surplus';
                     <span><?= htmlspecialchars($user['nama']) ?></span>
                     <span class="role-tag"><?= htmlspecialchars($user['role']) ?></span>
                 </a>
+                <a class="btn sm" href="notifikasi/index.php">Notifikasi</a>
                 <a class="btn sm" href="profil/index.php">Profil</a>
                 <a class="btn sm fill" href="auth/logout.php">Keluar</a>
             <?php else: ?>

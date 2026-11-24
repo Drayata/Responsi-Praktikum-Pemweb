@@ -116,5 +116,54 @@ $avatar_path = !empty($profile['foto']) && file_exists(__DIR__ . '/../uploads/av
         </div>
     </div>
 </div>
+<?php if (($profile['role'] ?? '') === 'penerima'): ?>
+    <?php
+    $stmt_riwayat = $pdo->prepare("
+        SELECT p.*, d.nama_makanan, u.nama AS nama_penyedia,
+               (SELECT COUNT(*) FROM ulasan ul WHERE ul.pesanan_id = p.id) AS sudah_diulas
+        FROM pesanan p
+        JOIN donasi d ON p.donasi_id = d.id
+        JOIN users u ON d.user_id = u.id
+        WHERE p.user_id = ?
+        ORDER BY p.id DESC
+    ");
+    $stmt_riwayat->execute([$profile['id']]);
+    $riwayat_pesanan = $stmt_riwayat->fetchAll(PDO::FETCH_ASSOC);
+    ?>
 
+    <div class="wrap" style="max-width: 1000px; margin: 30px auto;">
+        <div style="background: #fff; padding: 28px; border-radius: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
+            <h2 style="font-family: 'Anton', sans-serif; font-size: 1.8rem; margin-top: 0;">RIWAYAT KLAIM & ULASAN SAYA</h2>
+
+            <?php if (empty($riwayat_pesanan)): ?>
+                <p style="color: #666; margin: 0;">Belum ada riwayat pengambilan makanan.</p>
+            <?php else: ?>
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                    <?php foreach ($riwayat_pesanan as $rp): ?>
+                        <div style="border: 1px solid #eee; border-radius: 16px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <strong style="font-size: 1.05rem;"><?= htmlspecialchars($rp['nama_makanan']) ?></strong>
+                                <span style="color: #666; font-size: 0.9rem;"> • <?= (int)$rp['jumlah_porsi'] ?> porsi dari <?= htmlspecialchars($rp['nama_penyedia']) ?></span>
+                                <div style="margin-top: 4px; font-size: 0.85rem; color: #555;">
+                                    Kode Ambil: <strong><?= htmlspecialchars($rp['kode_ambil'] ?? '-') ?></strong> |
+                                    Status: <strong><?= strtoupper(htmlspecialchars($rp['status'])) ?></strong>
+                                </div>
+                            </div>
+
+                            <div>
+                                <?php if ($rp['status'] === 'selesai' && (int)$rp['sudah_diulas'] === 0): ?>
+                                    <a class="btn sm fill" href="../ulasan/tambah.php?pesanan_id=<?= $rp['id'] ?>">Beri Ulasan</a>
+                                <?php elseif ((int)$rp['sudah_diulas'] > 0): ?>
+                                    <span style="color: #2E7D32; font-weight: 600; font-size: 0.9rem;">✓ Sudah Diulas</span>
+                                <?php else: ?>
+                                    <span style="color: #888; font-size: 0.85rem;">Menunggu Selesai</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+<?php endif; ?>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
