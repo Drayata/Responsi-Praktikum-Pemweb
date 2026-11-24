@@ -42,6 +42,15 @@ unset($_SESSION['flash_error'], $_SESSION['flash_success']);
         
         <div class="nav-user">
             <?php if ($user): ?>
+                <a href="<?= $root_path ?>notifikasi/index.php" class="nav-notif" style="position: relative; text-decoration: none; color: var(--ink);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: block;">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <?php if ($user['role'] !== 'penerima'): ?>
+                        <span id="notifikasi-badge" style="display: none;"></span>
+                    <?php endif; ?>
+                </a>
                 <a href="<?= $root_path ?>profil/index.php" class="user-badge">
                     <span><?= htmlspecialchars($user['nama']) ?></span>
                     <span class="role-tag"><?= htmlspecialchars($user['role']) ?></span>
