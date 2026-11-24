@@ -42,6 +42,20 @@ unset($_SESSION['flash_error'], $_SESSION['flash_success']);
         
         <div class="nav-user">
             <?php if ($user): ?>
+                <?php
+                $jumlah_notif_baru = 0;
+                if (isset($pdo)) {
+                    $stmt_notif = $pdo->prepare("SELECT COUNT(*) FROM notifikasi WHERE user_id = ? AND is_read = 0");
+                    $stmt_notif->execute([$user['id']]);
+                    $jumlah_notif_baru = (int) $stmt_notif->fetchColumn();
+                }
+                ?>
+                <?php if ($user['role'] === 'admin'): ?>
+                    <a class="btn sm" href="<?= $root_path ?>admin/users.php">Admin</a>
+                <?php endif; ?>
+                <a class="btn sm" href="<?= $root_path ?>notifikasi/index.php">
+                    Notifikasi<?= $jumlah_notif_baru > 0 ? ' (' . $jumlah_notif_baru . ')' : '' ?>
+                </a>
                 <a href="<?= $root_path ?>profil/index.php" class="user-badge">
                     <span><?= htmlspecialchars($user['nama']) ?></span>
                     <span class="role-tag"><?= htmlspecialchars($user['role']) ?></span>

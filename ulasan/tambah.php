@@ -70,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $page_title = 'Beri Ulasan — BagiPangan';
+$root_path = '../';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 

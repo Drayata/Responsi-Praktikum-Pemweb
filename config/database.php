@@ -6,7 +6,7 @@ $db_host = 'localhost';
 $db_port = '3306';
 $db_name = 'bagipangan_db';
 $db_user = 'root';
-$db_pass = 'Likuyy@12'; // Default XAMPP tanpa password
+$db_pass = ''; // Default XAMPP tanpa password
 
 try {
     $dsn = "mysql:host={$db_host};port={$db_port};dbname={$db_name};charset=utf8mb4";

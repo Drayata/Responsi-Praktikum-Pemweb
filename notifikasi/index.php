@@ -37,6 +37,7 @@ $stmt->execute([$user_id]);
 $daftar_notifikasi = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $page_title = 'Notifikasi Saya — BagiPangan';
+$root_path = '../';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
@@ -99,5 +100,4 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     <?php endif; ?>
 </main>
-
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
