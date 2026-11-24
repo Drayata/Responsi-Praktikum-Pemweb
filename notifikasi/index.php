@@ -70,7 +70,15 @@ require_once __DIR__ . '/../includes/header.php';
 <script>
 // Refresh notifikasi badge setiap 60 detik
 setInterval(() => {
-    fetch('refresh.php' <?= $user ? ', { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ user_id: <?= $user['id'] ?> }) }' : '' ?>)
+    <?php if ($user): ?>
+    fetch('refresh.php', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: <?= $user['id'] ?> })
+    })
+    <?php else: ?>
+    fetch('refresh.php')
+    <?php endif; ?>
         .then(res => res.json())
         .then(data => {
             const badge = document.getElementById('notifikasi-badge');

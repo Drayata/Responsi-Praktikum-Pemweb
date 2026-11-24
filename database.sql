@@ -78,6 +78,32 @@ CREATE TABLE IF NOT EXISTS pesanan (
     FOREIGN KEY (donasi_id) REFERENCES donasi(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- 6. Tabel ulasan (Modul Alfi)
+CREATE TABLE IF NOT EXISTS ulasan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pesanan_id INT NOT NULL UNIQUE,
+    user_id INT NOT NULL,
+    donasi_id INT NOT NULL,
+    rating TINYINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    komentar TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (pesanan_id) REFERENCES pesanan(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (donasi_id) REFERENCES donasi(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 7. Tabel notifikasi (Modul Alfi)
+CREATE TABLE IF NOT EXISTS notifikasi (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    judul VARCHAR(100) NOT NULL,
+    pesan TEXT NOT NULL,
+    link VARCHAR(255) NULL,
+    is_read TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 -- Contoh donasi awal yang sinkron dengan tampilan index.html
 INSERT IGNORE INTO donasi (id, user_id, kategori_id, nama_makanan, deskripsi, porsi_awal, porsi_tersisa, batas_waktu, alamat_ambil, foto, status) VALUES
 (1, 1, 1, 'Nasi kotak ayam bakar', 'Nasi kotak surplus acara makan siang, lengkap sambal & lalapan, higienis dan hangat.', 15, 12, DATE_ADD(NOW(), INTERVAL 5 HOUR), 'Jl. Kampus No. 12, Grendeng, Purwokerto', NULL, 'tersedia'),
