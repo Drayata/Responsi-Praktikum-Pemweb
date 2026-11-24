@@ -12,8 +12,8 @@
 | Anggota | Modul Tugas | Tabel Database | Status | Branch Git |
 |---|---|---|---|---|
 | **Willy** | • Autentikasi dan Role<br>• Manajemen Profil<br>• Manajemen Donasi Makanan | `users`<br>`kategori`<br>`donasi` | **SELESAI (100%)** | `auth-willy` |
-| **Indra** | • Pencarian dan Filter<br>• Pemesanan Makanan<br>• Status & Verifikasi Pengambilan | `pesanan` | **Siap Dikerjakan (Next)** | `modul-pesanan-indra` |
-| **Alfi** | • Ulasan dan Rating<br>• Dashboard Dampak SDGs<br>• Panel Admin & Moderasi<br>• Notifikasi dan Riwayat | `ulasan`<br>`notifikasi` | **Siap Dikerjakan (Next)** | `modul-ulasan-notifikasi` |
+| **Indra** | • Pencarian dan Filter<br>• Pemesanan Makanan<br>• Status & Verifikasi Pengambilan | `pesanan` | **SELESAI (100%)** | `modul-pesanan-indra` |
+| **Alfi** | • Ulasan dan Rating<br>• Dashboard Dampak SDGs<br>• Panel Admin & Moderasi<br>• Notifikasi dan Riwayat | `ulasan`<br>`notifikasi` | **SELESAI (100%)** | `modul-ulasan-notifikasi` |
 
 ---
 
@@ -55,33 +55,45 @@ Seluruh modul pondasi utama sistem telah selesai dibangun, terintegrasi dengan d
 ## 3. Tutorial Menjalankan Proyek Saat Ini
 
 1. **Nyalakan MySQL di XAMPP**: Pastikan status MySQL pada XAMPP Control Panel berwarna hijau (**Running**).
-2. **Jalankan Web Server via Terminal**:
+2. **Jalankan Migrasi Database** (Otomatis buat tabel `pesanan`, `ulasan`, `notifikasi`):
    Buka terminal di root proyek lalu jalankan:
+   ```bash
+   php migrate.php
+   ```
+   *Atau manual: Import `database.sql` via phpMyAdmin (http://localhost/phpmyadmin)*
+3. **Jalankan Web Server via Terminal**:
    ```bash
    php -S localhost:8000
    ```
-3. **Buka di Browser**: Kunjungi **`http://localhost:8000`**.
-4. **Akun Uji Coba Cepat (Password semua: `password123`)**:
+4. **Buka di Browser**: Kunjungi **`http://localhost:8000`**.
+5. **Akun Uji Coba Cepat (Password semua: `password123`)**:
    - **Penyedia Makanan:** `katering@bagipangan.com`
    - **Penerima Makanan:** `budi@bagipangan.com`
    - **Admin Sistem:** `admin@bagipangan.com`
 
+**Alur Uji Coba Lengkap:**
+- **Penerima**: Login → Cari/Filter makanan di beranda → Klik "Pesan 1 porsi" → Isi jumlah & catatan → Lihat riwayat di `/pesanan/riwayat.php` → Salin kode `BP-XXXX`.
+- **Penyedia**: Login → `/pesanan/verifikasi.php` → Masukkan kode `BP-XXXX` → Verifikasi → Notifikasi ke penerima.
+- **Penerima (ulasan)**: Login → `/ulasan/tambah.php?pesanan_id=X` (dari notifikasi) → Beri rating 1-5 + komentar.
+- **Admin**: Login → `/admin/` → Kelola users/donasi/kategori.
+- **Dampak SDGs**: Buka `/dampak/` untuk dashboard visual statistik.
+
 ---
 
-## 4. Rincian Modul Lanjutan: Indra
+## 4. Rincian Modul Lanjutan: Indra ✅ SELESAI
 > **Fokus:** Pencarian & Filter, Alur Pemesanan Makanan, Status & Verifikasi Pengambilan  
 > **Branch Git Rekomendasi:** `modul-pesanan-indra`  
 > **Tabel yang Dibuat:** `pesanan`
 
 ### A. Skema SQL Tabel `pesanan`
-Indra cukup menambahkan query ini ke MySQL XAMPP (atau file `database.sql`):
+Tabel sudah ditambahkan ke `database.sql` dan dibuat via `migrate.php`:
 
 ```sql
 CREATE TABLE IF NOT EXISTS pesanan (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    kode_pesanan VARCHAR(20) NOT NULL UNIQUE, -- Contoh format: BP-8492
-    user_id INT NOT NULL,                     -- Penerima makanan (FK ke users)
-    donasi_id INT NOT NULL,                   -- Makanan yang dipesan (FK ke donasi)
+    kode_pesanan VARCHAR(20) NOT NULL UNIQUE,
+    user_id INT NOT NULL,
+    donasi_id INT NOT NULL,
     jumlah_porsi INT NOT NULL DEFAULT 1,
     status ENUM('menunggu', 'selesai', 'dibatalkan', 'kedaluwarsa') DEFAULT 'menunggu',
     catatan TEXT NULL,
@@ -92,41 +104,24 @@ CREATE TABLE IF NOT EXISTS pesanan (
 ) ENGINE=InnoDB;
 ```
 
-### B. Daftar Fitur & Berkas yang Harus Dibuat Indra:
-1. **Pencarian & Filter Makanan Dinamis (`index.php` / `makanan/cari.php`)**:
-   - Tambahkan input teks pencarian kata kunci pada katalog makanan di `index.php`.
-   - Hubungkan form pencarian dan tombol chips kategori dengan query SQL:
-     ```php
-     $query = "SELECT d.*, k.nama_kategori, u.nama AS nama_penyedia 
-               FROM donasi d 
-               JOIN kategori k ON d.kategori_id = k.id 
-               JOIN users u ON d.user_id = u.id 
-               WHERE d.status = 'tersedia' AND d.batas_waktu > NOW()";
-     // Tambahkan filter jika ada input search atau kategori
-     ```
-2. **Logika Pemesanan Makanan (`pesanan/buat.php`)**:
-   - Menghubungkan tombol "Pesan 1 Porsi" di kartu makanan ke proses penyimpanan pesanan:
-     - Pastikan pemesan wajib login sebagai `penerima` (`require_role('penerima')`).
-     - Validasi apakah sisa porsi di tabel `donasi` masih mencukupi (`porsi_tersisa >= 1`).
-     - Generate kode unik pengambilan acak, misalnya: `BP-` + angka acak 4 digit (`BP-4892`).
-     - Simpan data baru ke tabel `pesanan` dengan status default `menunggu`.
-     - **Penting:** Kurangi kuota porsi pada tabel donasi:
-       ```sql
-       UPDATE donasi SET porsi_tersisa = porsi_tersisa - 1 WHERE id = ?
-       ```
-       *(Jika `porsi_tersisa` menjadi 0, update status donasi menjadi `habis`)*.
-3. **Halaman Tiket & Riwayat Pesanan Penerima (`pesanan/riwayat.php`)**:
-   - Menampilkan daftar pesanan milik penerima yang sedang login.
-   - Menampilkan kartu tiket dengan **Kode Pengambilan**, nama makanan, lokasi penjemputan, batas jam ambil, dan status.
-   - Tombol batalkan pesanan (jika dibatalkan, kembalikan kuota porsi `porsi_tersisa + 1` ke tabel donasi).
-4. **Halaman Verifikasi Pengambilan untuk Penyedia (`pesanan/verifikasi.php`)**:
-   - Halaman khusus role `penyedia` (`require_role(['penyedia', 'admin'])`).
-   - Penyedia memasukkan kode `BP-XXXX` yang ditunjukkan penerima di lokasi serah terima.
-   - Jika kode cocok, ubah status pesanan menjadi `selesai` dan set `waktu_ambil = NOW()`.
+### B. Fitur & Berkas yang Telah Dibuat Indra:
+
+| Fitur | Berkas | Status |
+|-------|--------|--------|
+| **Pencarian & Filter Makanan** | `index.php` (updated) | ✅ Selesai |
+| **Logika Pemesanan Makanan** | `pesanan/buat.php` | ✅ Selesai |
+| **Riwayat Pesanan Penerima** | `pesanan/riwayat.php` | ✅ Selesai |
+| **Verifikasi Pengambilan Penyedia** | `pesanan/verifikasi.php` | ✅ Selesai |
+
+**Detail Implementasi:**
+1. **Pencarian & Filter** (`index.php`): Input teks search + chips kategori filter dengan query SQL dinamis.
+2. **Pemesanan** (`pesanan/buat.php`): Validasi role penerima, cek stok porsi, generate kode `BP-XXXX`, kurangi stok otomatis, notifikasi ke penyedia.
+3. **Riwayat Pesanan** (`pesanan/riwayat.php`): Daftar pesanan dengan kode pengambilan, status badge, tombol batalkan (kembalikan stok).
+4. **Verifikasi** (`pesanan/verifikasi.php`): Input kode `BP-XXXX`, validasi kepemilikan donasi, update status `selesai`, notifikasi ke penerima untuk ulasan.
 
 ---
 
-## 5. Rincian Modul Lanjutan: Alfi
+## 5. Rincian Modul Lanjutan: Alfi ✅ SELESAI
 > **Fokus:** Ulasan & Rating, Dashboard Dampak SDGs, Panel Admin & Moderasi, Notifikasi  
 > **Branch Git Rekomendasi:** `modul-ulasan-notifikasi`  
 > **Tabel yang Dibuat:** `ulasan`, `notifikasi`
@@ -162,30 +157,23 @@ CREATE TABLE IF NOT EXISTS notifikasi (
 ) ENGINE=InnoDB;
 ```
 
-### B. Daftar Fitur & Berkas yang Harus Dibuat Alfi:
-1. **Fitur Ulasan dan Rating Bintang (`ulasan/tambah.php`)**:
-   - Form input rating bintang (skala 1 sampai 5) dan komentar ulasan.
-   - Hanya bisa diisi jika pesanan sudah berstatus `selesai`.
-   - Hitung rating rata-rata untuk setiap donasi/penyedia (`SELECT AVG(rating), COUNT(*) FROM ulasan WHERE donasi_id = ?`).
-   - Tampilkan testimoni riil pada kartu cerita di seksi `#cerita` beranda.
-2. **Dashboard Dampak Penyelamatan Pangan (`dampak/index.php` atau seksi `#dampak`)**:
-   - Menghubungkan angka statistik beranda ke data riil dari database:
-     - **Porsi Terselamatkan:** `SELECT SUM(jumlah_porsi) FROM pesanan WHERE status = 'selesai'`.
-     - **Kilogram Sampah Pangan Dicegah:** Asumsi 1 porsi = 0,35 kg ($Porsi \times 0.35$).
-     - **Emisi CO2 Dicegah (kg CO2e):** Asumsi 1 kg sampah makanan = 2,5 kg CO2e ($Kg\_Sampah \times 2.5$).
-     - **Penyedia Terlibat:** `SELECT COUNT(DISTINCT user_id) FROM donasi`.
-     - **Penerima Terbantu:** `SELECT COUNT(DISTINCT user_id) FROM pesanan WHERE status = 'selesai'`.
-3. **Panel Admin & Moderasi (`admin/`)**:
-   - Dibatasi khusus role `admin` (`require_role('admin')`).
-   - **`admin/users.php`**: Tabel daftar semua pengguna, filter role, dan tombol nonaktifkan/hapus akun bermasalah.
-   - **`admin/donasi.php`**: Moderasi daftar donasi makanan untuk menghapus makanan yang tidak higienis atau melanggar aturan.
-   - **`admin/kategori.php`**: Tambah, edit, dan hapus kategori makanan pada tabel `kategori`.
-4. **Sistem Notifikasi (`includes/notifikasi.php` & `notifikasi/index.php`)**:
-   - Fungsi helper `kirim_notifikasi($user_id, $judul, $pesan, $link)`.
-   - Otomatis membuat notifikasi saat:
-     - Ada pesanan baru masuk -> kirim ke **Penyedia**.
-     - Pesanan selesai diverifikasi -> kirim ke **Penerima** untuk ajakan mengulas.
-   - Ikon lonceng notifikasi di navbar dengan indikator badge belum dibaca.
+### B. Fitur & Berkas yang Telah Dibuat Alfi:
+
+| Fitur | Berkas | Status |
+|-------|--------|--------|
+| **Ulasan & Rating Bintang** | `ulasan/tambah.php` | ✅ Selesai |
+| **Dashboard Dampak SDGs** | `dampak/index.php` | ✅ Selesai |
+| **Panel Admin - Users** | `admin/users.php` | ✅ Selesai |
+| **Panel Admin - Donasi** | `admin/donasi.php` | ✅ Selesai |
+| **Panel Admin - Kategori** | `admin/kategori.php` | ✅ Selesai |
+| **Notifikasi System** | `includes/notifikasi.php` | ✅ Selesai |
+| **Notifikasi Inbox** | `notifikasi/index.php` | ✅ Selesai |
+
+**Detail Implementasi:**
+1. **Ulasan & Rating** (`ulasan/tambah.php`): Form 1-5 bintang + komentar, validasi pesanan `selesai`, notifikasi ke penyedia.
+2. **Dashboard Dampak** (`dampak/index.php`): Porsi terselamatkan, kg sampah (0.35 kg/porsi), CO₂e (2.5 kg/kg), penyedia/penerima count, chart 6 bulan, SDGs mapping (SDG 2, 12, 13, 17).
+3. **Admin Panel** (`admin/`): Dashboard ringkasan, kelola users (role toggle/delete), moderasi donasi (hapus/status), kelola kategori (CRUD).
+4. **Notifikasi** (`includes/notifikasi.php`): Helper `kirim_notifikasi()`, bell icon di header dengan badge, inbox di `notifikasi/index.php`, auto-refresh badge.
 
 ---
 

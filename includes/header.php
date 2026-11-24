@@ -42,19 +42,14 @@ unset($_SESSION['flash_error'], $_SESSION['flash_success']);
         
         <div class="nav-user">
             <?php if ($user): ?>
-                <?php
-                $jumlah_notif_baru = 0;
-                if (isset($pdo)) {
-                    $stmt_notif = $pdo->prepare("SELECT COUNT(*) FROM notifikasi WHERE user_id = ? AND is_read = 0");
-                    $stmt_notif->execute([$user['id']]);
-                    $jumlah_notif_baru = (int) $stmt_notif->fetchColumn();
-                }
-                ?>
-                <?php if ($user['role'] === 'admin'): ?>
-                    <a class="btn sm" href="<?= $root_path ?>admin/users.php">Admin</a>
-                <?php endif; ?>
-                <a class="btn sm" href="<?= $root_path ?>notifikasi/index.php">
-                    Notifikasi<?= $jumlah_notif_baru > 0 ? ' (' . $jumlah_notif_baru . ')' : '' ?>
+                <a href="<?= $root_path ?>notifikasi/index.php" class="nav-notif" style="position: relative; text-decoration: none; color: var(--ink);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: block;">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <?php if ($user['role'] !== 'penerima'): ?>
+                        <span id="notifikasi-badge" style="display: none;"></span>
+                    <?php endif; ?>
                 </a>
                 <a href="<?= $root_path ?>profil/index.php" class="user-badge">
                     <span><?= htmlspecialchars($user['nama']) ?></span>

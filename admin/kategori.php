@@ -1,78 +1,190 @@
 <?php
+// admin/kategori.php - Kelola Kategori
+session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
 require_login();
-$user = current_user();
-if (($user['role'] ?? '') !== 'admin') {
-    $_SESSION['flash_error'] = 'Akses khusus Admin.';
-    header('Location: ../index.php');
-    exit;
-}
+require_role('admin');
 
-if (isset($_POST['tambah_kategori'])) {
-    $nama = trim($_POST['nama_kategori'] ?? '');
-    if ($nama !== '') {
-        $stmt = $pdo->prepare("INSERT INTO kategori (nama_kategori) VALUES (?)");
-        $stmt->execute([$nama]);
-        $_SESSION['flash_success'] = 'Kategori baru berhasil ditambahkan.';
+$root_path = '/Responsi-Praktikum-Pemweb';
+$page_title = 'Kelola Kategori | Panel Admin';
+
+// Proses aksi
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+
+    if ($action === 'create') {
+        $nama = trim($_POST['nama_kategori'] ?? '');
+        $slug = trim($_POST['slug'] ?? '');
+        $deskripsi = trim($_POST['deskripsi'] ?? '');
+
+        if ($nama && $slug) {
+            try {
+                $pdo->prepare("INSERT INTO kategori (nama_kategori, slug, deskripsi) VALUES (?, ?, ?)")
+                    ->execute([$nama, $slug, $deskripsi]);
+                $_SESSION['flash_success'] = 'Kategori berhasil ditambahkan.';
+            } catch (PDOException $e) {
+                $_SESSION['flash_error'] = 'Gagal menambah kategori. Slug mungkin sudah digunakan.';
+            }
+        } else {
+            $_SESSION['flash_error'] = 'Nama dan slug kategori wajib diisi.';
+        }
+        header('Location: ' . $root_path . '/admin/kategori.php');
+        exit;
     }
-    header('Location: kategori.php');
-    exit;
+
+    if ($action === 'update') {
+        $id = (int)($_POST['id'] ?? 0);
+        $nama = trim($_POST['nama_kategori'] ?? '');
+        $slug = trim($_POST['slug'] ?? '');
+        $deskripsi = trim($_POST['deskripsi'] ?? '');
+
+        if ($id > 0 && $nama && $slug) {
+            try {
+                $pdo->prepare("UPDATE kategori SET nama_kategori = ?, slug = ?, deskripsi = ? WHERE id = ?")
+                    ->execute([$nama, $slug, $deskripsi, $id]);
+                $_SESSION['flash_success'] = 'Kategori berhasil diperbarui.';
+            } catch (PDOException $e) {
+                $_SESSION['flash_error'] = 'Gagal memperbarui kategori.';
+            }
+        }
+        header('Location: ' . $root_path . '/admin/kategori.php');
+        exit;
+    }
+
+    if ($action === 'delete') {
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id > 0) {
+            try {
+                // Cek apakah kategori digunakan di donasi
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM donasi WHERE kategori_id = ?");
+                $stmt->execute([$id]);
+                $count = (int)$stmt->fetchColumn();
+
+                if ($count > 0) {
+                    $_SESSION['flash_error'] = "Kategori tidak bisa dihapus karena masih digunakan oleh $count donasi.";
+                } else {
+                    $pdo->prepare("DELETE FROM kategori WHERE id = ?")->execute([$id]);
+                    $_SESSION['flash_success'] = 'Kategori berhasil dihapus.';
+                }
+            } catch (PDOException $e) {
+                $_SESSION['flash_error'] = 'Gagal menghapus kategori.';
+            }
+        }
+        header('Location: ' . $root_path . '/admin/kategori.php');
+        exit;
+    }
 }
 
-if (isset($_GET['hapus'])) {
-    $kid = (int) $_GET['hapus'];
-    $stmt = $pdo->prepare("DELETE FROM kategori WHERE id = ?");
-    $stmt->execute([$kid]);
-    $_SESSION['flash_success'] = 'Kategori berhasil dihapus.';
-    header('Location: kategori.php');
-    exit;
+// Ambil semua kategori
+$stmt = $pdo->query("SELECT * FROM kategori ORDER BY id ASC");
+$kategori_list = $stmt->fetchAll();
+
+// Data untuk edit
+$edit_kategori = null;
+if (isset($_GET['edit'])) {
+    $edit_id = (int)$_GET['edit'];
+    $stmt = $pdo->prepare("SELECT * FROM kategori WHERE id = ?");
+    $stmt->execute([$edit_id]);
+    $edit_kategori = $stmt->fetch();
 }
 
-$kategori = $pdo->query("SELECT * FROM kategori ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
-
-$page_title = 'Admin — Kelola Kategori';
-$root_path = '../';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="wrap" style="max-width: 1000px; margin: 30px auto;">
-    <div style="display: flex; gap: 10px; margin-bottom: 24px;">
-        <a class="btn sm" href="users.php">Kelola Pengguna</a>
-        <a class="btn sm" href="donasi.php">Moderasi Donasi</a>
-        <a class="btn sm fill" href="kategori.php">Kelola Kategori</a>
+<div class="wrap">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+        <h1>Kelola Kategori Makanan</h1>
+        <a href="<?= $root_path ?>/admin/" class="btn">← Kembali ke Dashboard</a>
     </div>
 
-    <div style="background: #fff; padding: 24px; border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
-        <h2 style="margin-top: 0;">Kelola Kategori Makanan</h2>
+    <!-- Form Tambah/Edit -->
+    <div class="card" style="padding: 24px; margin-bottom: 32px;">
+        <h3 style="margin-bottom: 20px;">
+            <?= $edit_kategori ? 'Edit Kategori' : 'Tambah Kategori Baru' ?>
+        </h3>
+        <form method="POST" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; align-items: end;">
+            <?php if ($edit_kategori): ?>
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="id" value="<?= $edit_kategori['id'] ?>">
+            <?php else: ?>
+                <input type="hidden" name="action" value="create">
+            <?php endif; ?>
 
-        <form method="POST" style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <input type="text" name="nama_kategori" placeholder="Nama kategori baru (misal: Minuman Segar)" required
-                   style="flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 999px;">
-            <button type="submit" name="tambah_kategori" class="btn sm fill">+ Tambah Kategori</button>
+            <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 12px;">Nama Kategori</label>
+                <input type="text" name="nama_kategori" required
+                       value="<?= htmlspecialchars($edit_kategori['nama_kategori'] ?? '') ?>"
+                       placeholder="Contoh: Minuman"
+                       style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 8px; font-family: inherit;">
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 12px;">Slug (URL)</label>
+                <input type="text" name="slug" required
+                       value="<?= htmlspecialchars($edit_kategori['slug'] ?? '') ?>"
+                       placeholder="Contoh: minuman"
+                       style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 8px; font-family: inherit;">
+            </div>
+
+            <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 12px;">Deskripsi</label>
+                <textarea name="deskripsi" rows="2"
+                          placeholder="Deskripsi singkat kategori..."
+                          style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 8px; font-family: inherit;"><?= htmlspecialchars($edit_kategori['deskripsi'] ?? '') ?></textarea>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="btn fill"><?= $edit_kategori ? 'Simpan Perubahan' : 'Tambah Kategori' ?></button>
+                <?php if ($edit_kategori): ?>
+                    <a href="<?= $root_path ?>/admin/kategori.php" class="btn">Batal</a>
+                <?php endif; ?>
+            </div>
         </form>
+    </div>
 
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="border-bottom: 2px solid #eee; text-align: left;">
-                    <th style="padding: 10px;">ID</th>
-                    <th style="padding: 10px;">Nama Kategori</th>
-                    <th style="padding: 10px;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($kategori as $k): ?>
-                    <tr style="border-bottom: 1px solid #f2f2f2;">
-                        <td style="padding: 10px;"><?= $k['id'] ?></td>
-                        <td style="padding: 10px; font-weight: 600;"><?= htmlspecialchars($k['nama_kategori']) ?></td>
-                        <td style="padding: 10px;">
-                            <a href="kategori.php?hapus=<?= $k['id'] ?>" onclick="return confirm('Hapus kategori ini?')" style="color: #d32f2f; font-weight: 600; text-decoration: none;">Hapus</a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+    <!-- Daftar Kategori -->
+    <div class="card" style="padding: 24px;">
+        <h3 style="margin-bottom: 20px;">Daftar Kategori (<?= count($kategori_list) ?>)</h3>
+
+        <?php if (empty($kategori_list)): ?>
+            <p class="text-muted" style="text-align: center; padding: 40px 0;">Belum ada kategori. Tambahkan kategori baru di atas.</p>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nama</th>
+                            <th>Slug</th>
+                            <th>Deskripsi</th>
+                            <th>Dibuat</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($kategori_list as $idx => $kat): ?>
+                            <tr>
+                                <td><?= $idx + 1 ?></td>
+                                <td><?= htmlspecialchars($kat['nama_kategori']) ?></td>
+                                <td><code><?= htmlspecialchars($kat['slug']) ?></code></td>
+                                <td><?= htmlspecialchars($kat['deskripsi'] ?? '-') ?></td>
+                                <td><?= date('d M Y', strtotime($kat['created_at'])) ?></td>
+                                <td>
+                                    <a href="<?= $root_path ?>/admin/kategori.php?edit=<?= $kat['id'] ?>" class="btn" style="font-size: 11px; padding: 6px 12px;">Edit</a>
+                                    <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin ingin menghapus kategori ini?');">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="id" value="<?= $kat['id'] ?>">
+                                        <button type="submit" class="btn danger" style="font-size: 11px; padding: 6px 12px;">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 

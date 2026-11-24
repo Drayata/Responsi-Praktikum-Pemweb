@@ -1,23 +1,42 @@
 <?php
-// includes/notifikasi.php
+// includes/notifikasi.php - Helper untuk sistem notifikasi
 
-function kirim_notifikasi(PDO $pdo, int $user_id, string $judul, string $pesan, ?string $link = null): bool
-{
-    $stmt = $pdo->prepare("
-        INSERT INTO notifikasi (user_id, judul, pesan, link) 
-        VALUES (:user_id, :judul, :pesan, :link)
-    ");
-    return $stmt->execute([
-        ':user_id' => $user_id,
-        ':judul'   => $judul,
-        ':pesan'   => $pesan,
-        ':link'    => $link
-    ]);
+/**
+ * Kirim notifikasi ke user
+ * 
+ * @param PDO $pdo
+ * @param int $user_id ID penerima notifikasi
+ * @param string $judul Judul notifikasi
+ * @param string $pesan Isi pesan notifikasi
+ * @param string|null $link Link tujuan saat diklik
+ * @return bool
+ */
+function kirim_notifikasi($pdo, $user_id, $judul, $pesan, $link = null) {
+    try {
+        $stmt = $pdo->prepare("
+            INSERT INTO notifikasi (user_id, judul, pesan, link, is_read, created_at)
+            VALUES (?, ?, ?, ?, 0, NOW())
+        ");
+        return $stmt->execute([$user_id, $judul, $pesan, $link]);
+    } catch (PDOException $e) {
+        error_log("Notifikasi gagal: " . $e->getMessage());
+        return false;
+    }
 }
 
-function hitung_notifikasi_belum_dibaca(PDO $pdo, int $user_id): int
-{
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifikasi WHERE user_id = ? AND is_read = 0");
-    $stmt->execute([$user_id]);
-    return (int) $stmt->fetchColumn();
+/**
+ * Hitung jumlah notifikasi belum dibaca
+ * 
+ * @param PDO $pdo
+ * @param int $user_id
+ * @return int
+ */
+function count_unread_notifikasi($pdo, $user_id) {
+    try {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifikasi WHERE user_id = ? AND is_read = 0");
+        $stmt->execute([$user_id]);
+        return (int)$stmt->fetchColumn();
+    } catch (PDOException $e) {
+        return 0;
+    }
 }

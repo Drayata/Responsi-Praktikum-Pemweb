@@ -63,6 +63,21 @@ INSERT IGNORE INTO users (id, nama, email, password, no_hp, alamat, role, foto) 
 (2, 'Budi Santoso', 'budi@bagipangan.com', '$2y$12$MajKx4hOlQaWsdxXiF5dgeQ08BAxinMhiut9HOCRWnP7d6.2glnNG', '089876543210', 'Asrama Mahasiswa Unsoed, Purwokerto', 'penerima', 'default-avatar.png'),
 (3, 'Admin BagiPangan', 'admin@bagipangan.com', '$2y$12$MajKx4hOlQaWsdxXiF5dgeQ08BAxinMhiut9HOCRWnP7d6.2glnNG', '081122334455', 'Kantor Komunitas BagiPangan, Purwokerto', 'admin', 'default-avatar.png');
 
+-- 5. Tabel pesanan (Modul Indra)
+CREATE TABLE IF NOT EXISTS pesanan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    kode_pesanan VARCHAR(20) NOT NULL UNIQUE,
+    user_id INT NOT NULL,
+    donasi_id INT NOT NULL,
+    jumlah_porsi INT NOT NULL DEFAULT 1,
+    status ENUM('menunggu', 'selesai', 'dibatalkan', 'kedaluwarsa') DEFAULT 'menunggu',
+    catatan TEXT NULL,
+    waktu_pesan TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    waktu_ambil DATETIME NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (donasi_id) REFERENCES donasi(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 -- Contoh donasi awal yang sinkron dengan tampilan index.html
 INSERT IGNORE INTO donasi (id, user_id, kategori_id, nama_makanan, deskripsi, porsi_awal, porsi_tersisa, batas_waktu, alamat_ambil, foto, status) VALUES
 (1, 1, 1, 'Nasi kotak ayam bakar', 'Nasi kotak surplus acara makan siang, lengkap sambal & lalapan, higienis dan hangat.', 15, 12, DATE_ADD(NOW(), INTERVAL 5 HOUR), 'Jl. Kampus No. 12, Grendeng, Purwokerto', NULL, 'tersedia'),

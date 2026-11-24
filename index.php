@@ -15,22 +15,47 @@ try {
     // Fallback jika query error
 }
 
+// Search & Filter handling
+$search = trim($_GET['search'] ?? '');
+$kategori_filter = $_GET['kategori'] ?? '';
+
+// Build query with search and filter
+$where_conditions = ["d.status = 'tersedia'", "d.batas_waktu > NOW()"];
+$params = [];
+
+if ($search !== '') {
+    $where_conditions[] = "(d.nama_makanan LIKE ? OR d.deskripsi LIKE ? OR u.nama LIKE ?)";
+    $search_term = "%$search%";
+    $params = array_merge($params, [$search_term, $search_term, $search_term]);
+}
+
+if ($kategori_filter !== '') {
+    $where_conditions[] = "k.nama_kategori = ?";
+    $params[] = $kategori_filter;
+}
+
+$where_sql = implode(' AND ', $where_conditions);
+
 // Ambil donasi aktif dari database
 $donasi_list = [];
-$total_terselamatkan = 3248; // Nilai dasar sesuai prototipe
+$total_terselamatkan = 0;
+$total_penyedia = 0;
+$total_penerima = 0;
 try {
-    $stmt = $pdo->query("SELECT d.*, k.nama_kategori, u.nama AS nama_penyedia 
-                         FROM donasi d 
-                         JOIN kategori k ON d.kategori_id = k.id 
-                         JOIN users u ON d.user_id = u.id 
-                         WHERE d.status = 'tersedia' AND d.batas_waktu > NOW() 
-                         ORDER BY d.created_at DESC");
+    $sql = "SELECT d.*, k.nama_kategori, u.nama AS nama_penyedia 
+            FROM donasi d 
+            JOIN kategori k ON d.kategori_id = k.id 
+            JOIN users u ON d.user_id = u.id 
+            WHERE $where_sql 
+            ORDER BY d.created_at DESC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     $donasi_list = $stmt->fetchAll();
     
-    // Hitung total porsi yang sudah diambil/terselamatkan
-    $st_saved = $pdo->query("SELECT SUM(porsi_awal - porsi_tersisa) FROM donasi");
-    $db_saved = (int)$st_saved->fetchColumn();
-    $total_terselamatkan += $db_saved;
+    // Hitung statistik riil dari database
+    $total_terselamatkan = (int)$pdo->query("SELECT COALESCE(SUM(jumlah_porsi), 0) FROM pesanan WHERE status = 'selesai'")->fetchColumn();
+    $total_penyedia = (int)$pdo->query("SELECT COUNT(DISTINCT user_id) FROM donasi")->fetchColumn();
+    $total_penerima = (int)$pdo->query("SELECT COUNT(DISTINCT user_id) FROM pesanan WHERE status = 'selesai'")->fetchColumn();
 } catch (Exception $e) {
     // Fallback jika database belum ada data
 }
@@ -176,14 +201,14 @@ $page_title = 'Berbagi Makanan Surplus';
             <div class="stat">
                 <small>Penyedia bergabung</small>
                 <div>
-                    <div class="n">64<span>+</span></div>
+                    <div class="n"><?= number_format($total_penyedia, 0, ',', '.') ?><span>+</span></div>
                     <p>Restoran, toko roti, katering, dan rumah tangga.</p>
                 </div>
             </div>
             <div class="stat">
                 <small>Penerima terlayani</small>
                 <div>
-                    <div class="n">412<span>+</span></div>
+                    <div class="n"><?= number_format($total_penerima, 0, ',', '.') ?><span>+</span></div>
                     <p>Mahasiswa, warga, dan panti yang mengambil makanan.</p>
                 </div>
             </div>
@@ -198,11 +223,22 @@ $page_title = 'Berbagi Makanan Surplus';
             <p>Pilih makanan, pesan porsi yang kamu perlukan, lalu ambil sebelum batas waktunya.</p>
         </div>
 
-        <div class="chips" id="chips" role="group" aria-label="Filter kategori">
-            <button class="chip active" data-c="Semua">Semua</button>
-            <?php foreach ($kategori_list as $kat): ?>
-                <button class="chip" data-c="<?= htmlspecialchars($kat['nama_kategori']) ?>"><?= htmlspecialchars($kat['nama_kategori']) ?></button>
-            <?php endforeach; ?>
+        <!-- Search & Filter -->
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; justify-content: center;">
+            <form method="GET" style="flex: 1; max-width: 400px;">
+                <input type="text" name="search" placeholder="Cari makanan, penyedia, deskripsi..."
+                       value="<?= htmlspecialchars($search) ?>"
+                       style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--ink); border-radius: var(--radius-pill); font: 600 14px 'Inter', sans-serif;">
+            </form>
+            <div class="chips" id="chips" role="group" aria-label="Filter kategori">
+                <a href="?search=<?= urlencode($search) ?>&kategori=" class="chip <?= $kategori_filter === '' ? 'active' : '' ?>">Semua</a>
+                <?php foreach ($kategori_list as $kat): ?>
+                    <a href="?search=<?= urlencode($search) ?>&kategori=<?= urlencode($kat['nama_kategori']) ?>"
+                       class="chip <?= $kategori_filter === $kat['nama_kategori'] ? 'active' : '' ?>">
+                        <?= htmlspecialchars($kat['nama_kategori']) ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
         </div>
 
         <div class="grid" id="grid">
@@ -308,15 +344,20 @@ $page_title = 'Berbagi Makanan Surplus';
 
 <script src="assets/js/script.js"></script>
 <script>
-// Filter chips kategori
-const chips = document.querySelectorAll('.chip');
+// Filter chips kategori (simpler - CSS handles this)
+const chips = document.querySelectorAll('.chips a');
 const cards = document.querySelectorAll('.food-card');
 
 chips.forEach(chip => {
-    chip.addEventListener('click', function() {
+    chip.addEventListener('click', function(e) {
+        // Only prevent default if not search input
+        if (this.tagName !== 'A') return;
+        e.preventDefault();
+
         chips.forEach(c => c.classList.remove('active'));
         this.classList.add('active');
-        const selected = this.dataset.c;
+
+        const selected = this.textContent.trim();
 
         cards.forEach(card => {
             if (selected === 'Semua' || card.dataset.category === selected) {
@@ -337,10 +378,12 @@ pillButtons.forEach(pill => {
     });
 });
 
-// Pesan porsi simulation & feedback
+// Pesan porsi logic with actual backend
 const isUserLoggedIn = <?= $user ? 'true' : 'false' ?>;
 document.querySelectorAll('.btn-order').forEach(btn => {
     btn.addEventListener('click', function() {
+        const donasiId = this.dataset.id;
+
         if (!isUserLoggedIn) {
             showToast('Silakan masuk akun terlebih dahulu untuk memesan.');
             setTimeout(() => {
@@ -349,11 +392,8 @@ document.querySelectorAll('.btn-order').forEach(btn => {
             return;
         }
 
-        const nama = this.dataset.nama;
-        const penyedia = this.dataset.penyedia;
-        const until = this.dataset.until;
-        const code = 'BP-' + Math.floor(1000 + Math.random() * 9000);
-        showToast(`Pesanan dibuat untuk ${nama}! Tunjukkan kode ${code} di ${penyedia} sebelum ${until}.`);
+        // Redirect to actual order creation page with donasi ID
+        window.location.href = 'pesanan/buat.php?id=' + donasiId;
     });
 });
 </script>
