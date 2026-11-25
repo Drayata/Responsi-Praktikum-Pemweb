@@ -2,7 +2,6 @@
 // admin/donasi.php - Moderasi Donasi
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
-session_start();
 
 require_login();
 require_role('admin');

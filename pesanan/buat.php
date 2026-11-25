@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/notifikasi.php';
-session_start();
 
 $root_path = base_url('');
 $page_title = 'Buat Pesanan | BagiPangan';

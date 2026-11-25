@@ -2,7 +2,6 @@
 // notifikasi/refresh.php - Endpoint untuk update badge notifikasi
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
-session_start();
 
 require_login();
 header('Content-Type: application/json');

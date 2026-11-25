@@ -3,7 +3,6 @@
 $root_path = '../';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
-session_start();
 
 // Jika sudah login, redirect
 if (is_logged_in()) {

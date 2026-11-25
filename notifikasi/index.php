@@ -2,7 +2,6 @@
 // notifikasi/index.php - Daftar notifikasi pengguna
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
-session_start();
 
 require_login();
 $root_path = base_url('');

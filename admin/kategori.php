@@ -2,7 +2,6 @@
 // admin/kategori.php - Kelola Kategori
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
-session_start();
 
 require_login();
 require_role('admin');
