@@ -114,7 +114,7 @@ require_once __DIR__ . '/../includes/header.php';
     <?php else: ?>
         <div style="display: grid; gap: 16px;">
             <?php foreach ($pesanan_menunggu as $row): ?>
-                <article class="card" style="display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center;">
+                <article class="verify-card">
                     <div>
                         <h3 style="margin-bottom: 4px;"><?= htmlspecialchars($row['nama_makanan']) ?></h3>
                         <p class="text-muted" style="margin-bottom: 4px;">

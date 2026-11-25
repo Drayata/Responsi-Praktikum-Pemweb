@@ -41,3 +41,15 @@ function confirmAction(message, url) {
         window.location.href = url;
     }
 }
+
+// Toggle menu mobile
+document.addEventListener('DOMContentLoaded', function () {
+    const toggleBtn = document.getElementById('navToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (toggleBtn && mobileMenu) {
+        toggleBtn.addEventListener('click', function () {
+            const isOpen = mobileMenu.classList.toggle('open');
+            toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+    }
+});

@@ -31,18 +31,24 @@ unset($_SESSION['flash_error'], $_SESSION['flash_success']);
     <nav>
         <a class="logo" href="<?= $root_path ?>index.php"><i></i>BagiPangan</a>
         <div class="nav-links">
-            <a href="<?= $root_path ?>index.php#makanan">Katalog Makanan</a>
-            <?php if ($user && in_array($user['role'], ['penyedia', 'admin'])): ?>
-                <a href="<?= $root_path ?>donasi/tambah.php">+ Donasi Makanan</a>
-                <a href="<?= $root_path ?>donasi/riwayat.php">Kelola Donasi</a>
+            <a href="<?= $root_path ?>index.php#makanan">Katalog</a>
+            <?php if ($user && $user['role'] === 'penerima'): ?>
+                <a href="<?= $root_path ?>pesanan/riwayat.php">Pesanan Saya</a>
             <?php endif; ?>
-            <a href="<?= $root_path ?>index.php#dampak">Dampak</a>
-            <a href="<?= $root_path ?>index.php#cerita">Cerita</a>
+            <?php if ($user && in_array($user['role'], ['penyedia', 'admin'])): ?>
+                <a href="<?= $root_path ?>donasi/tambah.php">+ Donasi</a>
+                <a href="<?= $root_path ?>donasi/riwayat.php">Kelola Donasi</a>
+                <a href="<?= $root_path ?>pesanan/verifikasi.php">Verifikasi</a>
+            <?php endif; ?>
+            <?php if ($user && $user['role'] === 'admin'): ?>
+                <a href="<?= $root_path ?>admin/index.php" style="color: var(--orange);">Panel Admin</a>
+            <?php endif; ?>
+            <a href="<?= $root_path ?>dampak/index.php">Dampak</a>
         </div>
         
         <div class="nav-user">
             <?php if ($user): ?>
-                <a href="<?= $root_path ?>notifikasi/index.php" class="nav-notif" style="position: relative; text-decoration: none; color: var(--ink);">
+                <a href="<?= $root_path ?>notifikasi/index.php" class="nav-notif" aria-label="Notifikasi" style="position: relative; text-decoration: none; color: var(--ink);">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: block;">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -61,8 +67,49 @@ unset($_SESSION['flash_error'], $_SESSION['flash_success']);
                 <a class="btn sm" href="<?= $root_path ?>auth/login.php">Masuk</a>
                 <a class="btn sm fill" href="<?= $root_path ?>auth/register.php">Daftar</a>
             <?php endif; ?>
+            <button type="button" id="navToggle" class="nav-toggle" aria-label="Buka menu navigasi" aria-expanded="false">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
         </div>
     </nav>
+
+    <div id="mobileMenu" class="mobile-menu">
+        <?php if ($user): ?>
+            <div class="mobile-user-info">
+                <span><?= htmlspecialchars($user['nama']) ?></span>
+                <span class="role-tag" style="background: var(--cream); padding: 2px 10px; border-radius: 999px; font-size: 11px; color: var(--rust); text-transform: uppercase;"><?= htmlspecialchars($user['role']) ?></span>
+            </div>
+        <?php endif; ?>
+        <a href="<?= $root_path ?>index.php#makanan">Katalog Makanan</a>
+        <?php if ($user && $user['role'] === 'penerima'): ?>
+            <a href="<?= $root_path ?>pesanan/riwayat.php">Pesanan Saya</a>
+        <?php endif; ?>
+        <?php if ($user && in_array($user['role'], ['penyedia', 'admin'])): ?>
+            <a href="<?= $root_path ?>donasi/tambah.php" style="color: var(--orange);">+ Tambah Donasi Makanan</a>
+            <a href="<?= $root_path ?>donasi/riwayat.php">Kelola Donasi</a>
+            <a href="<?= $root_path ?>pesanan/verifikasi.php">Verifikasi Pengambilan</a>
+        <?php endif; ?>
+        <?php if ($user && $user['role'] === 'admin'): ?>
+            <a href="<?= $root_path ?>admin/index.php" style="color: var(--orange);">Panel Admin</a>
+        <?php endif; ?>
+        <a href="<?= $root_path ?>dampak/index.php">Dashboard Dampak</a>
+        <?php if ($user): ?>
+            <a href="<?= $root_path ?>notifikasi/index.php">Notifikasi</a>
+            <div class="mobile-actions">
+                <a class="btn sm" href="<?= $root_path ?>profil/index.php">Profil</a>
+                <a class="btn sm fill" href="<?= $root_path ?>auth/logout.php">Keluar</a>
+            </div>
+        <?php else: ?>
+            <div class="mobile-actions">
+                <a class="btn sm" href="<?= $root_path ?>auth/login.php">Masuk</a>
+                <a class="btn sm fill" href="<?= $root_path ?>auth/register.php">Daftar</a>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <div class="wrap" style="margin-top: 20px;">

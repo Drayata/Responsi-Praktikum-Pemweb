@@ -150,7 +150,7 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 
     <!-- Kategori Terpopuler & SDGs -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div class="grid-2col">
         <!-- Kategori Terpopuler -->
         <div class="card" style="padding: 24px;">
             <h3 style="margin-bottom: 24px;">Kategori Makanan Terpopuler</h3>

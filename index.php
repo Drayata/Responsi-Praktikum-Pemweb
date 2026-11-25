@@ -108,12 +108,14 @@ $page_title = 'Berbagi Makanan Surplus';
 .chip.active, .chip[aria-pressed=true] { background: var(--ink); color: var(--cream); }
 
 .pills { display: flex; gap: 12px; height: 380px; }
-.pill { flex: 0 0 72px; border-radius: var(--radius-pill); border: 0; cursor: pointer; position: relative; overflow: hidden; color: var(--white); text-align: left; transition: flex-basis .4s ease; padding: 0; background: var(--bg); }
-.pill .t { position: absolute; inset: auto 0 0 0; padding: 24px 28px; background: linear-gradient(transparent, rgba(0, 0, 0, .65)); opacity: 0; transition: opacity .3s; }
+.pill { flex: 0 0 72px; border-radius: var(--radius-pill); border: 0; cursor: pointer; position: relative; overflow: hidden; color: var(--white); text-align: left; transition: flex-basis .5s cubic-bezier(0.22, 1, 0.36, 1), border-radius .45s cubic-bezier(0.22, 1, 0.36, 1), transform .2s ease; padding: 0; background: var(--bg); -webkit-tap-highlight-color: transparent; }
+.pill:focus:not(:focus-visible) { outline: none; }
+.pill:active { transform: scale(0.985); }
+.pill .t { position: absolute; inset: auto 0 0 0; padding: 24px 28px; background: linear-gradient(transparent, rgba(0, 0, 0, .65)); opacity: 0; transform: translateY(10px); transition: opacity .35s ease, transform .4s cubic-bezier(0.22, 1, 0.36, 1); }
 .pill .t b { display: block; font-size: 20px; margin-bottom: 6px; }
 .pill .t span { font-size: 14px; display: block; max-width: 300px; }
 .pill[aria-expanded=true] { flex: 1 1 360px; border-radius: 40px; }
-.pill[aria-expanded=true] .t { opacity: 1; }
+.pill[aria-expanded=true] .t { opacity: 1; transform: translateY(0); }
 
 .closing { background: var(--orange); color: var(--white); border-radius: 48px; margin: 0 24px; text-align: center; padding: 80px 24px; }
 .closing h2 { font-size: clamp(48px, 10vw, 110px); line-height: .95; }
@@ -123,6 +125,23 @@ $page_title = 'Berbagi Makanan Surplus';
 .sdg span { background: var(--white); color: var(--ink); border-radius: var(--radius-pill); padding: 8px 18px; font-size: 13px; font-weight: 600; }
 .closing .btn { border-color: var(--white); color: var(--white); }
 .closing .btn:hover { background: var(--white); color: var(--rust); }
+
+@media (max-width: 820px) {
+    .hero { padding: 24px 0 48px; }
+    .hero h1 { font-size: clamp(64px, 22vw, 120px); }
+    .head { margin: 0 auto 32px; }
+    .stats { grid-template-columns: 1fr; gap: 14px; }
+    .stat { min-height: auto; padding: 22px; border-radius: 22px; }
+    .stat .n { font-size: 52px; }
+    .pills { flex-direction: column; height: auto; gap: 10px; }
+    .pill { flex: 0 0 auto; width: 100%; border-radius: 22px; transition: border-radius .4s ease, transform .2s ease, box-shadow .35s ease; }
+    .pill .t { position: relative; padding: 18px 22px; opacity: 1; background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, .28) 100%); transform: none; }
+    .pill .t b { margin-bottom: 0; font-size: 18px; transition: font-size .3s ease; }
+    .pill .t span { max-width: 100%; display: block; max-height: 0; opacity: 0; overflow: hidden; margin-top: 0; transform: translateY(6px); transition: max-height .45s cubic-bezier(0.22, 1, 0.36, 1), opacity .32s ease, transform .4s cubic-bezier(0.22, 1, 0.36, 1), margin-top .35s ease; }
+    .pill[aria-expanded=true] { flex: 0 0 auto; border-radius: 26px; box-shadow: 0 10px 24px rgba(0, 0, 0, .12); }
+    .pill[aria-expanded=true] .t span { max-height: 160px; opacity: 1; margin-top: 8px; transform: translateY(0); }
+    .closing { margin: 0 12px; border-radius: 32px; padding: 48px 20px; }
+}
 </style>
 </head>
 <body>
@@ -134,15 +153,27 @@ $page_title = 'Berbagi Makanan Surplus';
             <a href="#makanan">Makanan</a>
             <a href="#dampak">Dampak</a>
             <a href="#cerita">Cerita</a>
-            <a href="#sdgs">SDGs</a>
+            <?php if ($user && $user['role'] === 'penerima'): ?>
+                <a href="pesanan/riwayat.php">Pesanan Saya</a>
+            <?php endif; ?>
             <?php if ($user && in_array($user['role'], ['penyedia', 'admin'])): ?>
                 <a href="donasi/tambah.php" style="color: var(--orange);">+ Tambah Donasi</a>
                 <a href="donasi/riwayat.php">Kelola Donasi</a>
+                <a href="pesanan/verifikasi.php">Verifikasi</a>
+            <?php endif; ?>
+            <?php if ($user && $user['role'] === 'admin'): ?>
+                <a href="admin/index.php" style="color: var(--orange);">Panel Admin</a>
             <?php endif; ?>
         </div>
         
         <div class="nav-user">
             <?php if ($user): ?>
+                <a href="notifikasi/index.php" class="nav-notif" aria-label="Notifikasi" style="position: relative; text-decoration: none; color: var(--ink);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: block;">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </a>
                 <a href="profil/index.php" class="user-badge">
                     <span><?= htmlspecialchars($user['nama']) ?></span>
                     <span class="role-tag"><?= htmlspecialchars($user['role']) ?></span>
@@ -154,8 +185,51 @@ $page_title = 'Berbagi Makanan Surplus';
                 <a class="btn sm" href="auth/login.php">Masuk</a>
                 <a class="btn sm fill" href="auth/register.php">Daftar</a>
             <?php endif; ?>
+            <button type="button" id="navToggle" class="nav-toggle" aria-label="Buka menu navigasi" aria-expanded="false">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
         </div>
     </nav>
+
+    <div id="mobileMenu" class="mobile-menu">
+        <?php if ($user): ?>
+            <div class="mobile-user-info">
+                <span><?= htmlspecialchars($user['nama']) ?></span>
+                <span class="role-tag" style="background: var(--cream); padding: 2px 10px; border-radius: 999px; font-size: 11px; color: var(--rust); text-transform: uppercase;"><?= htmlspecialchars($user['role']) ?></span>
+            </div>
+        <?php endif; ?>
+        <a href="#makanan">Katalog Makanan</a>
+        <a href="#dampak">Dampak</a>
+        <a href="#cerita">Cerita Komunitas</a>
+        <?php if ($user && $user['role'] === 'penerima'): ?>
+            <a href="pesanan/riwayat.php">Pesanan Saya</a>
+        <?php endif; ?>
+        <?php if ($user && in_array($user['role'], ['penyedia', 'admin'])): ?>
+            <a href="donasi/tambah.php" style="color: var(--orange);">+ Tambah Donasi Makanan</a>
+            <a href="donasi/riwayat.php">Kelola Donasi</a>
+            <a href="pesanan/verifikasi.php">Verifikasi Pengambilan</a>
+        <?php endif; ?>
+        <?php if ($user && $user['role'] === 'admin'): ?>
+            <a href="admin/index.php" style="color: var(--orange);">Panel Admin</a>
+        <?php endif; ?>
+        <a href="dampak/index.php">Dashboard Dampak</a>
+        <?php if ($user): ?>
+            <a href="notifikasi/index.php">Notifikasi</a>
+            <div class="mobile-actions">
+                <a class="btn sm" href="profil/index.php">Profil</a>
+                <a class="btn sm fill" href="auth/logout.php">Keluar</a>
+            </div>
+        <?php else: ?>
+            <div class="mobile-actions">
+                <a class="btn sm" href="auth/login.php">Masuk</a>
+                <a class="btn sm fill" href="auth/register.php">Daftar</a>
+            </div>
+        <?php endif; ?>
+    </div>
 
     <header class="hero">
         <h1>Bagi<br>Pangan</h1>

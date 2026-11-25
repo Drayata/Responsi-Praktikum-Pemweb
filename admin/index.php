@@ -31,7 +31,7 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="wrap">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+    <div class="page-header">
         <h1>Panel Admin</h1>
         <a href="<?= $root_path ?>" class="btn">Kembali ke Beranda</a>
     </div>

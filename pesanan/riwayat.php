@@ -91,8 +91,8 @@ require_once __DIR__ . '/../includes/header.php';
                     default => ucfirst($row['status'])
                 };
             ?>
-                <article class="card" style="display: grid; grid-template-columns: 140px 1fr auto; gap: 16px; align-items: center; min-height: 140px;">
-                    <div style="width: 140px; height: 120px; border-radius: 12px; <?= $bg_style ?> background-size: cover; background-position: center; position: relative;">
+                <article class="order-card">
+                    <div class="order-thumb" style="<?= $bg_style ?>">
                         <span class="tag" style="position: absolute; top: 8px; left: 8px;"><?= htmlspecialchars($row['nama_kategori']) ?></span>
                     </div>
                     <div style="min-width: 0;">
@@ -116,16 +116,18 @@ require_once __DIR__ . '/../includes/header.php';
                             </span>
                         </div>
                     </div>
-                    <div style="text-align: right; min-width: 180px;">
-                        <div style="font-family: 'Anton', sans-serif; font-size: 18px; letter-spacing: 1px; color: var(--orange);">
-                            <?= htmlspecialchars($row['kode_pesanan']) ?>
+                    <div class="order-actions">
+                        <div>
+                            <div style="font-family: 'Anton', sans-serif; font-size: 18px; letter-spacing: 1px; color: var(--orange);">
+                                <?= htmlspecialchars($row['kode_pesanan']) ?>
+                            </div>
+                            <p class="text-muted" style="font-size: 11px; margin-top: 2px;">Kode Pengambilan</p>
                         </div>
-                        <p class="text-muted" style="font-size: 11px; margin-top: 4px;">Kode Pengambilan</p>
                         
                         <?php if ($row['status'] === 'menunggu'): ?>
-                            <form method="POST" style="margin-top: 12px;" onsubmit="return confirm('Batalkan pesanan ini? Porsi akan dikembalikan.');">
+                            <form method="POST" style="margin-top: 8px;" onsubmit="return confirm('Batalkan pesanan ini? Porsi akan dikembalikan.');">
                                 <input type="hidden" name="batalkan_id" value="<?= $row['id'] ?>">
-                                <button type="submit" class="btn" style="background: #dc3545; color: white; border-color: #dc3545;">Batalkan</button>
+                                <button type="submit" class="btn sm" style="background: #dc3545; color: white; border-color: #dc3545;">Batalkan</button>
                             </form>
                         <?php endif; ?>
                     </div>

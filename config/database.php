@@ -32,23 +32,19 @@ try {
         "<p>Pesan Error: " . htmlspecialchars($e->getMessage()) . "</p>");
 }
 
-// Helper base url dinamis
+// Helper base url dinamis (bekerja baik di php -S maupun XAMPP subfolder)
 if (!function_exists('base_url')) {
     function base_url($path = '') {
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? "https://" : "http://";
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        
-        // Cari base folder project
-        $script_dir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
-        // Normalisasi path agar mengarah ke root project
-        // Jika script ada di subfolder seperti /auth atau /donasi
-        $segments = explode('/', trim($script_dir, '/'));
+
+        $doc_root = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? ''));
+        $proj_root = str_replace('\\', '/', realpath(__DIR__ . '/..'));
         $base_folder = '';
-        if (!empty($segments)) {
-            // Ambil nama root folder di htdocs
-            $base_folder = '/' . $segments[0];
+        if ($doc_root && $proj_root && strpos($proj_root, $doc_root) === 0) {
+            $base_folder = substr($proj_root, strlen($doc_root));
         }
-        
+
         $url = rtrim($protocol . $host . $base_folder, '/');
         return $url . '/' . ltrim($path, '/');
     }

@@ -20,7 +20,7 @@ try {
 $stmt = $pdo->prepare("
     SELECT n.*, d.nama_makanan, d.user_id AS penyedia_id
     FROM notifikasi n
-    LEFT JOIN donasi d ON n.link LIKE CONCAT('%donasi_id=%', d.id, '%') AND d.is_active = 1
+    LEFT JOIN donasi d ON n.link LIKE CONCAT('%donasi_id=%', d.id, '%')
     WHERE n.user_id = ?
     ORDER BY n.created_at DESC
     LIMIT 50
