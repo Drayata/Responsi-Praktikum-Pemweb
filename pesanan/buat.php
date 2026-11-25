@@ -1,11 +1,11 @@
 <?php
 // pesanan/buat.php - Membuat pesanan makanan
-session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/notifikasi.php';
+session_start();
 
-$root_path = '/Responsi-Praktikum-Pemweb';
+$root_path = base_url('');
 $page_title = 'Buat Pesanan | BagiPangan';
 
 $donasi_id = $_GET['id'] ?? 0;

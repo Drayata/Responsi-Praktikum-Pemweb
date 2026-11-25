@@ -1,9 +1,9 @@
 <?php
 // donasi/riwayat.php
-session_start();
 $root_path = '../';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
+session_start();
 
 require_role(['penyedia', 'admin'], '../index.php');
 

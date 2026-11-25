@@ -1,11 +1,11 @@
 <?php
 // notifikasi/index.php - Daftar notifikasi pengguna
-session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
+session_start();
 
 require_login();
-$root_path = '/Responsi-Praktikum-Pemweb';
+$root_path = base_url('');
 $page_title = 'Notifikasi | BagiPangan';
 $user = current_user();
 

@@ -2,6 +2,16 @@
 // config/database.php
 // Konfigurasi koneksi MySQL XAMPP menggunakan PHP Data Objects (PDO)
 
+// Session security config (harus sebelum session_start)
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', '1');
+    ini_set('session.cookie_samesite', 'Lax');
+    ini_set('session.use_strict_mode', '1');
+    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        ini_set('session.cookie_secure', '1');
+    }
+}
+
 $db_host = 'localhost';
 $db_port = '3306';
 $db_name = 'bagipangan_db';

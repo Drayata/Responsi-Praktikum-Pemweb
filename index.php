@@ -1,9 +1,9 @@
 <?php
 // index.php - Halaman Utama Dinamis BagiPangan
-session_start();
 $root_path = './';
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/auth_check.php';
+session_start();
 
 $user = current_user();
 
@@ -157,18 +157,6 @@ $page_title = 'Berbagi Makanan Surplus';
             <?php endif; ?>
         </div>
     </nav>
-
-    <!-- Flash message -->
-    <?php if (isset($_SESSION['flash_success'])): ?>
-        <div class="alert alert-success" style="margin-top: 16px;">
-            <?= htmlspecialchars($_SESSION['flash_success']); unset($_SESSION['flash_success']); ?>
-        </div>
-    <?php endif; ?>
-    <?php if (isset($_SESSION['flash_error'])): ?>
-        <div class="alert alert-danger" style="margin-top: 16px;">
-            <?= htmlspecialchars($_SESSION['flash_error']); unset($_SESSION['flash_error']); ?>
-        </div>
-    <?php endif; ?>
 
     <header class="hero">
         <h1>Bagi<br>Pangan</h1>
@@ -344,31 +332,6 @@ $page_title = 'Berbagi Makanan Surplus';
 
 <script src="assets/js/script.js"></script>
 <script>
-// Filter chips kategori (simpler - CSS handles this)
-const chips = document.querySelectorAll('.chips a');
-const cards = document.querySelectorAll('.food-card');
-
-chips.forEach(chip => {
-    chip.addEventListener('click', function(e) {
-        // Only prevent default if not search input
-        if (this.tagName !== 'A') return;
-        e.preventDefault();
-
-        chips.forEach(c => c.classList.remove('active'));
-        this.classList.add('active');
-
-        const selected = this.textContent.trim();
-
-        cards.forEach(card => {
-            if (selected === 'Semua' || card.dataset.category === selected) {
-                card.style.display = 'flex';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    });
-});
-
 // Interactive pills cerita
 const pillButtons = document.querySelectorAll('.pill');
 pillButtons.forEach(pill => {

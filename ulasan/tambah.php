@@ -1,14 +1,14 @@
 <?php
 // ulasan/tambah.php - Tambah ulasan & rating
-session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/notifikasi.php';
+session_start();
 
 require_login();
 require_role('penerima');
 
-$root_path = '/Responsi-Praktikum-Pemweb';
+$root_path = base_url('');
 $page_title = 'Beri Ulasan | BagiPangan';
 $user = current_user();
 

@@ -1,9 +1,9 @@
 <?php
 // auth/login.php
-session_start();
 $root_path = '../';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
+session_start();
 
 // Jika sudah login, redirect
 if (is_logged_in()) {
@@ -38,6 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Redirect berdasarkan role
             if ($user['role'] === 'penyedia') {
                 header("Location: ../donasi/riwayat.php");
+            } elseif ($user['role'] === 'admin') {
+                header("Location: ../admin/index.php");
             } else {
                 header("Location: ../index.php");
             }

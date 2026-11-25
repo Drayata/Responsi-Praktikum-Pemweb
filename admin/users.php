@@ -1,13 +1,13 @@
 <?php
 // admin/users.php - Kelola Pengguna
-session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
+session_start();
 
 require_login();
 require_role('admin');
 
-$root_path = '/Responsi-Praktikum-Pemweb';
+$root_path = base_url('');
 $page_title = 'Kelola Pengguna | Panel Admin';
 
 // Proses aksi

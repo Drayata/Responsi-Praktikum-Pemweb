@@ -1,11 +1,11 @@
 <?php
 // donasi/edit.php
-session_start();
-$root_path = '../';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
+session_start();
 
-require_role(['penyedia', 'admin'], '../index.php');
+$root_path = base_url('');
+require_role(['penyedia', 'admin'], base_url('index.php'));
 
 $user_id = $_SESSION['user_id'];
 $user_role = $_SESSION['user_role'];

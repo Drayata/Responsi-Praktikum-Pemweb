@@ -1,14 +1,14 @@
 <?php
 // pesanan/verifikasi.php - Verifikasi pengambilan oleh penyedia
-session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/notifikasi.php';
+session_start();
 
 require_login();
 require_role(['penyedia', 'admin']);
 
-$root_path = '/Responsi-Praktikum-Pemweb';
+$root_path = base_url('');
 $page_title = 'Verifikasi Pengambilan | BagiPangan';
 $user = current_user();
 
