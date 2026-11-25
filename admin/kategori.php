@@ -103,7 +103,7 @@ require_once __DIR__ . '/../includes/header.php';
         <h3 style="margin-bottom: 20px;">
             <?= $edit_kategori ? 'Edit Kategori' : 'Tambah Kategori Baru' ?>
         </h3>
-        <form method="POST" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; align-items: end;">
+        <form method="POST" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end;">
             <?php if ($edit_kategori): ?>
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="id" value="<?= $edit_kategori['id'] ?>">
@@ -116,7 +116,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <input type="text" name="nama_kategori" required
                        value="<?= htmlspecialchars($edit_kategori['nama_kategori'] ?? '') ?>"
                        placeholder="Contoh: Minuman"
-                       style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 8px; font-family: inherit;">
+                       style="width: 100%; height: 42px; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 8px; font-family: inherit;">
             </div>
 
             <div>
@@ -124,18 +124,19 @@ require_once __DIR__ . '/../includes/header.php';
                 <input type="text" name="slug" required
                        value="<?= htmlspecialchars($edit_kategori['slug'] ?? '') ?>"
                        placeholder="Contoh: minuman"
-                       style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 8px; font-family: inherit;">
+                       style="width: 100%; height: 42px; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 8px; font-family: inherit;">
             </div>
 
             <div>
                 <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 12px;">Deskripsi</label>
-                <textarea name="deskripsi" rows="2"
-                          placeholder="Deskripsi singkat kategori..."
-                          style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 8px; font-family: inherit;"><?= htmlspecialchars($edit_kategori['deskripsi'] ?? '') ?></textarea>
+                <input type="text" name="deskripsi"
+                       value="<?= htmlspecialchars($edit_kategori['deskripsi'] ?? '') ?>"
+                       placeholder="Deskripsi singkat kategori..."
+                       style="width: 100%; height: 42px; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 8px; font-family: inherit;">
             </div>
 
             <div style="display: flex; gap: 12px;">
-                <button type="submit" class="btn fill"><?= $edit_kategori ? 'Simpan Perubahan' : 'Tambah Kategori' ?></button>
+                <button type="submit" class="btn fill" style="height: 42px; white-space: nowrap;"><?= $edit_kategori ? 'Simpan Perubahan' : 'Tambah Kategori' ?></button>
                 <?php if ($edit_kategori): ?>
                     <a href="<?= $root_path ?>/admin/kategori.php" class="btn">Batal</a>
                 <?php endif; ?>
