@@ -11,13 +11,20 @@ $donasi_id = $_GET['id'] ?? 0;
 $donasi = null;
 $porsi_tersisa = 0;
 
-// Validasi donasi
+// Validasi donasi + rating ulasan
 if ($donasi_id > 0) {
-    $stmt = $pdo->prepare("SELECT d.*, k.nama_kategori, u.nama AS nama_penyedia, u.alamat AS alamat_penyedia
-                          FROM donasi d
-                          JOIN kategori k ON d.kategori_id = k.id
-                          JOIN users u ON d.user_id = u.id
-                          WHERE d.id = ? AND d.status = 'tersedia' AND d.batas_waktu > NOW()");
+    $stmt = $pdo->prepare("
+        SELECT d.*, k.nama_kategori, u.nama AS nama_penyedia, u.alamat AS alamat_penyedia,
+               COALESCE(ROUND(AVG(ul.rating), 1), 0) AS avg_rating,
+               COUNT(ul.id) AS review_count
+        FROM donasi d
+        JOIN kategori k ON d.kategori_id = k.id
+        JOIN users u ON d.user_id = u.id
+        LEFT JOIN pesanan p ON p.donasi_id = d.id AND p.status = 'selesai'
+        LEFT JOIN ulasan ul ON ul.pesanan_id = p.id
+        WHERE d.id = ? AND d.status = 'tersedia' AND d.batas_waktu > NOW()
+        GROUP BY d.id, k.nama_kategori, u.nama, u.alamat
+    ");
     $stmt->execute([$donasi_id]);
     $donasi = $stmt->fetch();
 
@@ -97,6 +104,18 @@ require_once __DIR__ . '/../includes/header.php';
             <?php if ($donasi): ?>
                 <h3><?= htmlspecialchars($donasi['nama_makanan']) ?></h3>
                 <p class="text-muted"><?= htmlspecialchars($donasi['nama_penyedia']) ?></p>
+                
+                <?php if ($donasi['review_count'] > 0): ?>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 12px; background: #fff7ed; border-radius: 8px; border: 1px solid #ffd8a8;">
+                        <span style="font-size: 20px; font-weight: 700; color: var(--orange);"><?= $donasi['avg_rating'] ?></span>
+                        <span style="color: #FFD700; font-size: 18px;">★</span>
+                        <span class="text-muted" style="font-size: 14px;">(<?= $donasi['review_count'] ?> ulasan)</span>
+                        <span class="text-muted" style="font-size: 12px; margin-left: auto;">Rating dari penerima sebelumnya</span>
+                    </div>
+                <?php else: ?>
+                    <p class="text-muted" style="font-size: 13px; margin-bottom: 12px;">Belum ada ulasan untuk makanan ini</p>
+                <?php endif; ?>
+                
                 <p>Porsi tersisa: <strong><?= $porsi_tersisa ?></strong></p>
                 <p>Untuk ofiset ambil, silakan permisi terlebih dahulu dengan penyedia.</p>
 
