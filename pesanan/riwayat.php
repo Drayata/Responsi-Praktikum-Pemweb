@@ -50,9 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['batalkan_id'])) {
     exit;
 }
 
-// Ambil riwayat pesanan
+// Ambil riwayat pesanan + cek apakah sudah diulas
 $stmt = $pdo->prepare("
-    SELECT p.*, d.nama_makanan, d.foto, d.batas_waktu, d.alamat_ambil, k.nama_kategori, u.nama AS nama_penyedia
+    SELECT p.*, d.nama_makanan, d.foto, d.batas_waktu, d.alamat_ambil, k.nama_kategori, u.nama AS nama_penyedia,
+           (SELECT 1 FROM ulasan WHERE pesanan_id = p.id LIMIT 1) AS sudah_ulas
     FROM pesanan p
     JOIN donasi d ON p.donasi_id = d.id
     JOIN kategori k ON d.kategori_id = k.id
@@ -129,6 +130,8 @@ require_once __DIR__ . '/../includes/header.php';
                                 <input type="hidden" name="batalkan_id" value="<?= $row['id'] ?>">
                                 <button type="submit" class="btn sm" style="background: #dc3545; color: white; border-color: #dc3545;">Batalkan</button>
                             </form>
+                        <?php elseif ($row['status'] === 'selesai' && !$row['sudah_ulas']): ?>
+                            <a href="<?= $root_path ?>/ulasan/tambah.php?pesanan_id=<?= $row['id'] ?>" class="btn sm fill" style="margin-top: 8px;">Beri Ulasan</a>
                         <?php endif; ?>
                     </div>
                 </article>

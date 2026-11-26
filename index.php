@@ -35,17 +35,22 @@ if ($kategori_filter !== '') {
 
 $where_sql = implode(' AND ', $where_conditions);
 
-// Ambil donasi aktif dari database
+// Ambil donasi aktif dari database + rating ulasan
 $donasi_list = [];
 $total_terselamatkan = 0;
 $total_penyedia = 0;
 $total_penerima = 0;
 try {
-    $sql = "SELECT d.*, k.nama_kategori, u.nama AS nama_penyedia 
+    $sql = "SELECT d.*, k.nama_kategori, u.nama AS nama_penyedia,
+                   COALESCE(ROUND(AVG(ul.rating), 1), 0) AS avg_rating,
+                   COUNT(ul.id) AS review_count
             FROM donasi d 
             JOIN kategori k ON d.kategori_id = k.id 
-            JOIN users u ON d.user_id = u.id 
+            JOIN users u ON d.user_id = u.id
+            LEFT JOIN pesanan p ON p.donasi_id = d.id AND p.status = 'selesai'
+            LEFT JOIN ulasan ul ON ul.pesanan_id = p.id
             WHERE $where_sql 
+            GROUP BY d.id, k.nama_kategori, u.nama
             ORDER BY d.created_at DESC";
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
@@ -320,6 +325,13 @@ $page_title = 'Berbagi Makanan Surplus';
                             <span class="food-by"><?= htmlspecialchars($row['nama_penyedia']) ?></span>
                             <?php if (!empty($row['deskripsi'])): ?>
                                 <p class="food-desc"><?= htmlspecialchars(substr($row['deskripsi'], 0, 90)) ?>...</p>
+                            <?php endif; ?>
+                            <?php if ($row['review_count'] > 0): ?>
+                                <div class="food-rating" style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-weight: 600; color: var(--orange);"><?= $row['avg_rating'] ?></span>
+                                    <span style="color: #FFD700; font-size: 14px;">★</span>
+                                    <span class="text-muted" style="font-size: 12px;">(<?= $row['review_count'] ?> ulasan)</span>
+                                </div>
                             <?php endif; ?>
                             <div class="food-meta">
                                 <span><strong><?= $row['porsi_tersisa'] ?></strong> porsi tersisa</span>

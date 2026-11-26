@@ -1,6 +1,5 @@
 -- ============================================================
--- SETUP PESANAN & NOTIFIKASI (MODUL INDRA)
--- Jalankan di MySQL/phpMyAdmin untuk menambahkan tabel pesanan dan notifikasi
+-- SETUP PESANAN & NOTIFIKASI
 -- ============================================================
 
 -- 1. Tabel pesanan
