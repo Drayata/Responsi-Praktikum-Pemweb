@@ -52,10 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Ukuran file foto maksimal 3 MB!';
             } else {
                 $new_filename = 'food_' . $user_id . '_' . time() . '.' . $ext;
-                $target_dir = __DIR__ . '/../uploads/makanan/';
-                if (!is_dir($target_dir)) {
-                    mkdir($target_dir, 0777, true);
-                }
+                $target_dir = upload_path('makanan');
                 if (move_uploaded_file($file_tmp, $target_dir . $new_filename)) {
                     $foto_name = $new_filename;
                 } else {

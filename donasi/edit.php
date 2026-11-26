@@ -65,10 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Ukuran file foto maksimal 3 MB!';
             } else {
                 $new_filename = 'food_' . $donasi['user_id'] . '_' . time() . '.' . $ext;
-                $target_dir = __DIR__ . '/../uploads/makanan/';
-                if (!is_dir($target_dir)) {
-                    mkdir($target_dir, 0777, true);
-                }
+                $target_dir = upload_path('makanan');
                 if (move_uploaded_file($file_tmp, $target_dir . $new_filename)) {
                     if (!empty($foto_name) && file_exists($target_dir . $foto_name)) {
                         @unlink($target_dir . $foto_name);
@@ -168,9 +165,9 @@ $dt_value = date('Y-m-d\TH:i', strtotime($donasi['batas_waktu']));
 
             <div class="form-group">
                 <label for="foto">Ubah Foto Makanan (Opsional)</label>
-                <?php if (!empty($donasi['foto']) && file_exists(__DIR__ . '/../uploads/makanan/' . $donasi['foto'])): ?>
+                <?php if (!empty($donasi['foto']) && file_exists(upload_path('makanan') . $donasi['foto'])): ?>
                     <div style="margin-bottom: 10px;">
-                        <img src="<?= $root_path ?>uploads/makanan/<?= htmlspecialchars($donasi['foto']) ?>" alt="Foto Makanan" style="height: 100px; border-radius: 12px; object-fit: cover;">
+                        <img src="<?= upload_url($donasi['foto'], 'makanan') ?>" alt="Foto Makanan" style="height: 100px; border-radius: 12px; object-fit: cover;">
                     </div>
                 <?php endif; ?>
                 <input type="file" id="foto" name="foto" accept="image/*" class="form-control">

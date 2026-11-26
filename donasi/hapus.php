@@ -22,7 +22,7 @@ if ($id > 0) {
     if ($donasi) {
         // Hapus file foto jika ada
         if (!empty($donasi['foto'])) {
-            $file_path = __DIR__ . '/../uploads/makanan/' . $donasi['foto'];
+            $file_path = upload_path('makanan') . $donasi['foto'];
             if (file_exists($file_path)) {
                 @unlink($file_path);
             }

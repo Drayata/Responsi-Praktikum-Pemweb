@@ -12,7 +12,7 @@ $stmt->execute([$user_id]);
 $profile = $stmt->fetch();
 
 if (!$profile) {
-    header("Location: ../auth/logout.php");
+    header("Location: " . $root_path . "/auth/logout.php");
     exit;
 }
 
@@ -42,11 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Ukuran file foto maksimal 2 MB!';
             } else {
                 $new_filename = 'avatar_' . $user_id . '_' . time() . '.' . $ext;
-                $target_dir = __DIR__ . '/../uploads/avatars/';
-                if (!is_dir($target_dir)) {
-                    mkdir($target_dir, 0777, true);
-                }
-
+                $target_dir = upload_path('avatars');
                 if (move_uploaded_file($file_tmp, $target_dir . $new_filename)) {
                     // Hapus foto lama jika bukan default
                     if ($foto_name !== 'default-avatar.png' && file_exists($target_dir . $foto_name)) {
@@ -77,8 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title = 'Ubah Profil';
 require_once __DIR__ . '/../includes/header.php';
 
-$avatar_path = !empty($profile['foto']) && file_exists(__DIR__ . '/../uploads/avatars/' . $profile['foto'])
-    ? $root_path . 'uploads/avatars/' . htmlspecialchars($profile['foto'])
+$avatar_path = !empty($profile['foto']) && file_exists(upload_path('avatars') . $profile['foto'])
+    ? upload_url($profile['foto'], 'avatars')
     : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF6B3D'/%3E%3Ctext x='50' y='58' font-family='sans-serif' font-size='38' fill='%23fff' text-anchor='middle'%3E" . strtoupper(substr($profile['nama'], 0, 1)) . "%3C/text%3E%3C/svg%3E";
 ?>
 

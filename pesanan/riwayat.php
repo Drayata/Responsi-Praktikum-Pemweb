@@ -79,8 +79,8 @@ require_once __DIR__ . '/../includes/header.php';
     <?php else: ?>
         <div style="display: grid; gap: 16px;">
             <?php foreach ($riwayat as $row): 
-                $foto_src = !empty($row['foto']) && file_exists(__DIR__ . '/../uploads/makanan/' . $row['foto'])
-                    ? $root_path . '/uploads/makanan/' . htmlspecialchars($row['foto'])
+                $foto_src = !empty($row['foto']) && file_exists(upload_path('makanan') . $row['foto'])
+                    ? upload_url($row['foto'], 'makanan')
                     : null;
                 $bg_style = $foto_src ? "background-image: url('{$foto_src}');" : "background: linear-gradient(135deg, #FF6B3D, #f2b134);";
                 $status_class = $row['status'];

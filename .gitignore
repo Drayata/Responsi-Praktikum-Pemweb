@@ -1,0 +1,27 @@
+# Konfigurasi sensitif - JANGAN commit ke GitHub
+config/config.php
+
+# File upload (folder uploads dibuat otomatis, isi tidak perlu di-commit)
+uploads/makanan/*
+uploads/avatars/*
+!uploads/makanan/.gitkeep
+!uploads/avatars/.gitkeep
+
+# File migrasi - hanya untuk setup lokal
+migrate.php
+
+# Database dump lokal
+database.sql
+setup_pesanan.sql
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Log & cache
+*.log
+error_log

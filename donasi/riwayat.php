@@ -1,10 +1,10 @@
 <?php
 // donasi/riwayat.php
-$root_path = '../';
+$root_path = base_url('');
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
-require_role(['penyedia', 'admin'], '../index.php');
+require_role(['penyedia', 'admin'], base_url('index.php'));
 
 $user_id = $_SESSION['user_id'];
 $user_role = $_SESSION['user_role'];
@@ -73,8 +73,8 @@ require_once __DIR__ . '/../includes/header.php';
                         <?php foreach ($donasi_list as $row): 
                             $is_expired = strtotime($row['batas_waktu']) < time() && $row['status'] === 'tersedia';
                             $display_status = $is_expired ? 'kedaluwarsa' : $row['status'];
-                            $foto_url = !empty($row['foto']) && file_exists(__DIR__ . '/../uploads/makanan/' . $row['foto'])
-                                ? $root_path . 'uploads/makanan/' . htmlspecialchars($row['foto'])
+                            $foto_url = !empty($row['foto']) && file_exists(upload_path('makanan') . $row['foto'])
+                                ? upload_url($row['foto'], 'makanan')
                                 : null;
                         ?>
                             <tr>

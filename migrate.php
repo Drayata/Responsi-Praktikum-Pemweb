@@ -1,28 +1,54 @@
 <?php
-// migrate.php - Script inisialisasi database otomatis
-$host = 'localhost';
-$port = '3306';
-$user = 'root';
-$pass = '';
+// migrate.php - Script inisialisasi database otomatis (HANYA UNTUK CLI / LOCALHOST)
+// JANGAN akses via browser di production!
+// Jalankan: php migrate.php
+
+// Security: Hanya izinkan dari CLI atau localhost
+$is_cli = (php_sapi_name() === 'cli');
+$is_local = isset($_SERVER['REMOTE_ADDR']) && in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1', 'localhost']);
+
+if (!$is_cli && !$is_local) {
+    http_response_code(403);
+    die("Akses ditolak. Script ini hanya untuk inisialisasi database lokal via CLI.");
+}
+
+require_once __DIR__ . '/config/database.php';
+
+echo "=== BagiPangan Database Migration ===\n";
+echo "Environment: " . APP_ENV . "\n";
+echo "Debug Mode: " . (DEBUG_MODE ? 'ON' : 'OFF') . "\n\n";
 
 try {
-    echo "Menghubungkan ke server MySQL...\n";
-    $pdo = new PDO("mysql:host={$host};port={$port};charset=utf8mb4", $user, $pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]);
-
-    echo "Membaca file database.sql...\n";
-    $sql = file_get_contents(__DIR__ . '/database.sql');
-
-    echo "Mengeksekusi pembuatan database dan tabel...\n";
+    // Test koneksi
+    echo "✓ Terhubung ke database: {$cfg['db_name']} @ {$cfg['db_host']}:{$cfg['db_port']}\n";
+    
+    // Baca dan eksekusi SQL
+    $sql_file = __DIR__ . '/database.sql';
+    if (!file_exists($sql_file)) {
+        throw new Exception("File database.sql tidak ditemukan!");
+    }
+    
+    echo "✓ Membaca file database.sql...\n";
+    $sql = file_get_contents($sql_file);
+    
+    // Split statements (handle multi-statement)
+    $statements = array_filter(array_map('trim', explode(';', $sql)));
+    
+    echo "✓ Mengeksekusi " . count($statements) . " pernyataan SQL...\n";
     $pdo->exec($sql);
-
-    // Update password dummy user ke hash password123 yang valid
-    $hash = password_hash('password123', PASSWORD_BCRYPT);
-    $st = $pdo->prepare("UPDATE bagipangan_db.users SET password = ?");
-    $st->execute([$hash]);
-
-    echo "BERHASIL: Database dan password user dummy (password123) telah diperbarui!\n";
+    
+    echo "\n✓ BERHASIL: Database dan tabel telah dibuat!\n";
+    echo "✓ Data seed development (user test) telah di-insert.\n";
+    echo "\nAkun test (HANYA LOKAL - password: password123):\n";
+    echo "  - Penyedia: katering@bagipangan.com\n";
+    echo "  - Penerima: budi@bagipangan.com\n";
+    echo "  - Admin:    admin@bagipangan.com\n";
+    echo "\n⚠ PERINGATAN: Ganti password default sebelum deploy ke hosting!\n";
+    
 } catch (PDOException $e) {
-    echo "GAGAL: " . $e->getMessage() . "\n";
+    echo "\n✗ GAGAL (PDO): " . $e->getMessage() . "\n";
+    exit(1);
+} catch (Exception $e) {
+    echo "\n✗ GAGAL: " . $e->getMessage() . "\n";
+    exit(1);
 }

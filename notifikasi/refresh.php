@@ -15,5 +15,10 @@ try {
     echo json_encode(['unread' => $unread]);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['unread' => 0, 'error' => $e->getMessage()]);
+    // Jangan expose error detail di production
+    if (defined('DEBUG_MODE') && DEBUG_MODE) {
+        echo json_encode(['unread' => 0, 'error' => $e->getMessage()]);
+    } else {
+        echo json_encode(['unread' => 0, 'error' => 'Server error']);
+    }
 }

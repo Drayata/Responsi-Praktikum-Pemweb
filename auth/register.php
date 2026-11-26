@@ -1,6 +1,6 @@
 <?php
 // auth/register.php
-$root_path = '../';
+$root_path = base_url('');
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 

@@ -12,7 +12,7 @@ $stmt->execute([$user_id]);
 $profile = $stmt->fetch();
 
 if (!$profile) {
-    header("Location: ../auth/logout.php");
+    header("Location: " . $root_path . "/auth/logout.php");
     exit;
 }
 
@@ -32,8 +32,8 @@ if ($profile['role'] === 'penyedia') {
 $page_title = 'Profil Saya';
 require_once __DIR__ . '/../includes/header.php';
 
-$avatar_path = !empty($profile['foto']) && file_exists(__DIR__ . '/../uploads/avatars/' . $profile['foto'])
-    ? $root_path . 'uploads/avatars/' . htmlspecialchars($profile['foto'])
+$avatar_path = !empty($profile['foto']) && file_exists(upload_path('avatars') . $profile['foto'])
+    ? upload_url($profile['foto'], 'avatars')
     : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF6B3D'/%3E%3Ctext x='50' y='58' font-family='sans-serif' font-size='38' fill='%23fff' text-anchor='middle'%3E" . strtoupper(substr($profile['nama'], 0, 1)) . "%3C/text%3E%3C/svg%3E";
 ?>
 

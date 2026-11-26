@@ -23,15 +23,19 @@ function current_user() {
     ];
 }
 
-function require_login($redirect_url = '../auth/login.php') {
+// Gunakan base_url() untuk redirect yang konsisten di localhost dan hosting
+function require_login($redirect_url = null) {
     if (!is_logged_in()) {
         $_SESSION['flash_error'] = 'Silakan masuk terlebih dahulu untuk mengakses halaman ini.';
+        if ($redirect_url === null) {
+            $redirect_url = base_url('auth/login.php');
+        }
         header("Location: " . $redirect_url);
         exit;
     }
 }
 
-function require_role($allowed_roles = [], $redirect_url = '../index.php') {
+function require_role($allowed_roles = [], $redirect_url = null) {
     require_login();
     if (!is_array($allowed_roles)) {
         $allowed_roles = [$allowed_roles];
@@ -40,6 +44,9 @@ function require_role($allowed_roles = [], $redirect_url = '../index.php') {
     $role = $_SESSION['user_role'] ?? '';
     if (!in_array($role, $allowed_roles)) {
         $_SESSION['flash_error'] = 'Kamu tidak memiliki izin untuk mengakses halaman tersebut.';
+        if ($redirect_url === null) {
+            $redirect_url = base_url('index.php');
+        }
         header("Location: " . $redirect_url);
         exit;
     }

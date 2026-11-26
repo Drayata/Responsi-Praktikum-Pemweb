@@ -1,6 +1,6 @@
 <?php
 // index.php - Halaman Utama Dinamis BagiPangan
-$root_path = './';
+$root_path = base_url('');
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/auth_check.php';
 
@@ -310,8 +310,8 @@ $page_title = 'Berbagi Makanan Surplus';
         <div class="grid" id="grid">
             <?php if (!empty($donasi_list)): ?>
                 <?php foreach ($donasi_list as $row): 
-                    $foto_src = !empty($row['foto']) && file_exists(__DIR__ . '/uploads/makanan/' . $row['foto'])
-                        ? 'uploads/makanan/' . htmlspecialchars($row['foto'])
+                    $foto_src = !empty($row['foto']) && file_exists(upload_path('makanan') . $row['foto'])
+                        ? upload_url($row['foto'], 'makanan')
                         : null;
                     $bg_style = $foto_src ? "background-image: url('{$foto_src}'); background-size: cover; background-position: center;" : "background: linear-gradient(135deg, #FF6B3D, #f2b134);";
                     $until_time = date('H.i', strtotime($row['batas_waktu']));

@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $donasi = $stmt->fetch();
             
             if ($donasi && !empty($donasi['foto'])) {
-                $filepath = __DIR__ . '/../uploads/makanan/' . $donasi['foto'];
+                $filepath = upload_path('makanan') . $donasi['foto'];
                 if (file_exists($filepath)) {
                     unlink($filepath);
                 }
@@ -134,8 +134,8 @@ require_once __DIR__ . '/../includes/header.php';
                     </tr>
                 <?php else: ?>
                     <?php foreach ($donasi_list as $idx => $d): 
-                        $foto_src = !empty($d['foto']) && file_exists(__DIR__ . '/../uploads/makanan/' . $d['foto'])
-                            ? $root_path . '/uploads/makanan/' . htmlspecialchars($d['foto'])
+                        $foto_src = !empty($d['foto']) && file_exists(upload_path('makanan') . $d['foto'])
+                            ? upload_url($d['foto'], 'makanan')
                             : null;
                         $status_label = match($d['status']) {
                             'tersedia' => 'Tersedia',
